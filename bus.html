@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>巴士實時到站 (聯營無縫修復版)</title>
+    <style>
+        /* 鎖死畫面，禁止任何上下滑動 */
+        html, body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden; 
+        }
+        body {
+            background-color: #000000;
+            color: #ffffff;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+            padding: 15px 20px;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-flex-direction: column;
+            flex-direction: column;
+        }
+        .header {
+            display: -webkit-flex;
+            display: flex;
+            -webkit-justify-content: space-between;
+            justify-content: space-between;
+            -webkit-align-items: center;
+            align-items: center;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #333;
+            margin-bottom: 15px;
+            -webkit-flex-shrink: 0;
+            flex-shrink: 0;
+        }
+        .title-area {
+            display: -webkit-flex;
+            display: flex;
+            -webkit-flex-direction: column;
+            flex-direction: column;
+        }
+        .title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #ffffff;
+            cursor: pointer;
+        }
+        .subtitle {
+            font-size: 16px;
+            color: #aaaaaa;
+            margin-top: 4px;
+        }
+        .datetime {
+            text-align: right;
+        }
+        .time {
+            font-size: 40px;
+            font-weight: bold;
+            color: #0a84ff;
+            letter-spacing: 2px;
+        }
+        .date {
+            font-size: 16px;
+            color: #888888;
+            margin-top: 4px;
+        }
+        .grid-container {
+            -webkit-flex-grow: 1;
+            flex-grow: 1;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-flex-wrap: wrap;
+            flex-wrap: wrap;
+            -webkit-justify-content: space-between;
+            justify-content: space-between;
+            -webkit-align-content: space-between;
+            align-content: space-between;
+        }
+        .card {
+            background: #1c1c1e;
+            border-radius: 16px;
+            padding: 15px 20px;
+            width: 48.5%; 
+            height: 48.5%; 
+            box-sizing: border-box;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-flex-direction: column;
+            flex-direction: column;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        .route-header {
+            display: -webkit-flex;
+            display: flex;
+            -webkit-align-items: center;
+            align-items: center;
+            margin-bottom: 10px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            -webkit-flex-shrink: 0;
+            flex-shrink: 0;
+        }
+        .route-num {
+            font-size: 42px;
+            font-weight: bold;
+            color: #ff9f0a;
+            margin-right: 15px;
+            width: 75px;
+        }
+        .route-header-text {
+            display: -webkit-flex;
+            display: flex;
+            -webkit-flex-direction: column;
+            flex-direction: column;
+        }
+        .route-dest {
+            font-size: 20px;
+            color: #e5e5ea;
+            font-weight: bold;
+        }
+        .route-stop-name {
+            font-size: 14px;
+            color: #888888;
+            margin-top: 2px;
+        }
+        .eta-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-flex-direction: column;
+            flex-direction: column;
+            -webkit-justify-content: space-between;
+            justify-content: space-between;
+            -webkit-flex-grow: 1;
+            flex-grow: 1;
+        }
+        .eta-item {
+            display: -webkit-flex;
+            display: flex;
+            -webkit-justify-content: space-between;
+            justify-content: space-between;
+            -webkit-align-items: center;
+            align-items: center;
+            background: #2c2c2e;
+            padding: 8px 15px;
+            border-radius: 8px;
+            height: 28%; 
+            box-sizing: border-box;
+        }
+        .eta-time-info {
+            display: -webkit-flex;
+            display: flex;
+            -webkit-flex-direction: column;
+            flex-direction: column;
+            -webkit-justify-content: center;
+            justify-content: center;
+        }
+        .eta-exact {
+            font-size: 22px;
+            font-weight: bold;
+            color: #ffffff;
+            display: -webkit-flex;
+            display: flex;
+            -webkit-align-items: center;
+            align-items: center;
+        }
+        .co-badge {
+            font-size: 13px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 8px;
+            font-weight: bold;
+        }
+        .co-kmb { background-color: #E3002B; color: #ffffff; }
+        .co-ctb { background-color: #F1A300; color: #000000; }
+        
+        .rmk {
+            font-size: 14px;
+            color: #98989d;
+            margin-top: 2px;
+        }
+        .minutes {
+            font-size: 32px;
+            font-weight: bold;
+            color: #32d74b;
+        }
+        .minutes.soon {
+            color: #ff453a;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="title-area">
+            <div class="title" onclick="resetCache()">實時到站儀表板</div>
+            <div class="subtitle">自動更新 • 聯營無縫接合</div>
+        </div>
+        <div class="datetime">
+            <div class="time" id="clock-time">00:00:00</div>
+            <div class="date" id="clock-date">載入中...</div>
+        </div>
+    </div>
+
+    <div class="grid-container">
+        <div class="card" id="card-8P">
+            <div class="route-header">
+                <div class="route-num">8P</div>
+                <div class="route-header-text">
+                    <div class="route-dest">往 灣仔/金鐘</div>
+                    <div class="route-stop-name">📍 樂軒臺</div>
+                </div>
+            </div>
+            <ul class="eta-list" id="etas-8P"></ul>
+        </div>
+        <div class="card" id="card-118">
+            <div class="route-header">
+                <div class="route-num">118</div>
+                <div class="route-header-text">
+                    <div class="route-dest">往 旺角/深水埗</div>
+                    <div class="route-stop-name">📍 樂軒臺 (九巴/城巴)</div>
+                </div>
+            </div>
+            <ul class="eta-list" id="etas-118"></ul>
+        </div>
+        <div class="card" id="card-788">
+            <div class="route-header">
+                <div class="route-num">788</div>
+                <div class="route-header-text">
+                    <div class="route-dest">往 中環</div>
+                    <div class="route-stop-name">📍 翠灣邨, 永泰道</div>
+                </div>
+            </div>
+            <ul class="eta-list" id="etas-788"></ul>
+        </div>
+        <div class="card" id="card-789">
+            <div class="route-header">
+                <div class="route-num">789</div>
+                <div class="route-header-text">
+                    <div class="route-dest">往 金鐘</div>
+                    <div class="route-stop-name">📍 翠灣邨, 永泰道</div>
+                </div>
+            </div>
+            <ul class="eta-list" id="etas-789"></ul>
+        </div>
+    </div>
+
+    <script>
+        // 為了確保不被舊錯誤影響，升級了快取名稱到 v4
+        var CACHE_KEY = 'bus_stops_cache_ipad2_v4';
+
+        var routeConfigs = {
+            '8P':  { searchKeyword: '樂軒臺', stopId: null },
+            '118': { searchKeyword: '樂軒臺', stopId: null, kmbStopId: null },
+            '788': { searchKeyword: '翠灣',   stopId: null },
+            '789': { searchKeyword: '翠灣',   stopId: null }
+        };
+
+        function padZero(num) {
+            return num < 10 ? '0' + num : num;
+        }
+
+        function updateClock() {
+            var now = new Date();
+            var h = padZero(now.getHours());
+            var m = padZero(now.getMinutes());
+            var s = padZero(now.getSeconds());
+            document.getElementById('clock-time').innerHTML = h + ':' + m + ':' + s;
+
+            var year = now.getFullYear();
+            var month = now.getMonth() + 1;
+            var date = now.getDate();
+            var dayNames = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            var day = dayNames[now.getDay()];
+            document.getElementById('clock-date').innerHTML = year + '年' + month + '月' + date + '日 ' + day;
+        }
+
+        function makeRequest(url, callback) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        try {
+                            var json = JSON.parse(xhr.responseText);
+                            callback(null, json);
+                        } catch (e) {
+                            callback(e, null);
+                        }
+                    } else {
+                        callback(new Error('Network error'), null);
+                    }
+                }
+            };
+            xhr.send();
+        }
+
+        function findStopId(route, keyword, callback) {
+            var url = 'https://rt.data.gov.hk/v2/transport/citybus/route-stop/ctb/' + route + '/outbound';
+            makeRequest(url, function(err, data) {
+                if (err || !data || !data.data) { callback(null); return; }
+                var stops = data.data;
+                var currentIndex = 0;
+                function checkNextStop() {
+                    if (currentIndex >= stops.length) { callback(null); return; }
+                    var stopId = stops[currentIndex].stop;
+                    var stopUrl = 'https://rt.data.gov.hk/v2/transport/citybus/stop/' + stopId;
+                    makeRequest(stopUrl, function(err2, stopData) {
+                        if (!err2 && stopData && stopData.data && stopData.data.name_tc.indexOf(keyword) !== -1) {
+                            callback(stopId);
+                        } else {
+                            currentIndex++;
+                            checkNextStop();
+                        }
+                    });
+                }
+                checkNextStop();
+            });
+        }
+
+        // 強力版：同時搜尋九巴的「去程」和「回程」，無視方向差異
+        function findKmbStopId(route, keyword, callback) {
+            var urlOut = 'https://data.etabus.gov.hk/v1/transport/kmb/route-stop/' + route + '/outbound/1';
+            var urlIn  = 'https://data.etabus.gov.hk/v1/transport/kmb/route-stop/' + route + '/inbound/1';
+            
+            makeRequest(urlOut, function(err1, dataOut) {
+                makeRequest(urlIn, function(err2, dataIn) {
+                    var stops = [];
+                    if (!err1 && dataOut && dataOut.data) stops = stops.concat(dataOut.data);
+                    if (!err2 && dataIn && dataIn.data) stops = stops.concat(dataIn.data);
+                    
+                    if (stops.length === 0) { callback(null); return; }
+                    
+                    var currentIndex = 0;
+                    function checkNextStop() {
+                        if (currentIndex >= stops.length) { callback(null); return; }
+                        var stopId = stops[currentIndex].stop;
+                        var stopUrl = 'https://data.etabus.gov.hk/v1/transport/kmb/stop/' + stopId;
+                        makeRequest(stopUrl, function(err, stopData) {
+                            if (!err && stopData && stopData.data && stopData.data.name_tc.indexOf(keyword) !== -1) {
+                                callback(stopId);
+                            } else {
+                                currentIndex++;
+                                checkNextStop();
+                            }
+                        });
+                    }
+                    checkNextStop();
+                });
+            });
+        }
+
+        function renderError(route, msg) {
+            var listEl = document.getElementById('etas-' + route);
+            listEl.innerHTML = '<div style="color:#888; text-align:center; padding-top:20px; font-size:18px;">' + msg + '</div>';
+        }
+
+        function renderRoute(route, etas) {
+            var listEl = document.getElementById('etas-' + route);
+            
+            if (etas.length === 0) {
+                renderError(route, '暫無班次資料');
+                return;
+            }
+            
+            etas.sort(function(a, b) { 
+                return new Date(a.eta).getTime() - new Date(b.eta).getTime(); 
+            });
+            
+            var htmlStr = '';
+            var count = 3; // 固定輸出 3 行，維持完美排版
+            
+            for (var i = 0; i < count; i++) {
+                if (i < etas.length) {
+                    // 有真實班次資料時的渲染
+                    var eta = etas[i];
+                    var minStr = '';
+                    var isSoon = false;
+                    
+                    var etaTime = new Date(eta.eta);
+                    var exactTime = padZero(etaTime.getHours()) + ':' + padZero(etaTime.getMinutes());
+                    
+                    var diffMins = Math.floor((etaTime.getTime() - new Date().getTime()) / 60000);
+                    if (diffMins <= 1) {
+                        minStr = '即將抵達';
+                        isSoon = true;
+                    } else {
+                        minStr = diffMins + ' 分鐘';
+                    }
+                    
+                    var rmk = eta.rmk_tc ? '<div class="rmk">' + eta.rmk_tc + '</div>' : '';
+                    var timeClass = isSoon ? 'minutes soon' : 'minutes';
+
+                    var badgeHtml = '';
+                    if (eta.company === '九巴') badgeHtml = '<span class="co-badge co-kmb">九巴</span>';
+                    else if (eta.company === '城巴') badgeHtml = '<span class="co-badge co-ctb">城巴</span>';
+                    
+                    htmlStr += '<li class="eta-item">' +
+                        '<div class="eta-time-info">' +
+                            '<div class="eta-exact">' + exactTime + badgeHtml + '</div>' +
+                            rmk +
+                        '</div>' +
+                        '<div class="' + timeClass + '">' + minStr + '</div>' +
+                    '</li>';
+                } else {
+                    // 沒有班次時，塞入一個透明的隱藏方塊來維持 Flexbox 空間佈局
+                    htmlStr += '<li class="eta-item" style="background: transparent;"></li>';
+                }
+            }
+            
+            listEl.innerHTML = htmlStr;
+        }
+
+        function fetchETAs() {
+            var routes = ['8P', '118', '788', '789'];
+            
+            for (var i = 0; i < routes.length; i++) {
+                (function(route) {
+                    var config = routeConfigs[route];
+                    
+                    if (route === '118') {
+                        if (!config.stopId) return; // 至少要有城巴 ID
+
+                        var ctbDone = false, kmbDone = false;
+                        var combinedEtas = [];
+
+                        function finalize118() {
+                            if (ctbDone && kmbDone) {
+                                renderRoute(route, combinedEtas);
+                            }
+                        }
+
+                        // 城巴 API
+                        var ctbUrl = 'https://rt.data.gov.hk/v2/transport/citybus/eta/ctb/' + config.stopId + '/' + route;
+                        makeRequest(ctbUrl, function(err, json) {
+                            if (!err && json && json.data) {
+                                for (var j = 0; j < json.data.length; j++) {
+                                    if (json.data[j].dir === 'O' && json.data[j].eta) {
+                                        json.data[j].company = '城巴';
+                                        combinedEtas.push(json.data[j]);
+                                    }
+                                }
+                            }
+                            ctbDone = true;
+                            finalize118();
+                        });
+
+                        // 九巴 API (如果有成功拿到車站 ID 才執行，否則直接略過)
+                        if (config.kmbStopId) {
+                            var kmbUrl = 'https://data.etabus.gov.hk/v1/transport/kmb/eta/' + config.kmbStopId + '/' + route + '/1';
+                            makeRequest(kmbUrl, function(err, json) {
+                                if (!err && json && json.data) {
+                                    for (var j = 0; j < json.data.length; j++) {
+                                        // 由於車站是特定方向的，不再限制 dir，只要是九巴派車就抓
+                                        if (json.data[j].eta && json.data[j].co === 'KMB') {
+                                            json.data[j].company = '九巴';
+                                            combinedEtas.push(json.data[j]);
+                                        }
+                                    }
+                                }
+                                kmbDone = true;
+                                finalize118();
+                            });
+                        } else {
+                            // 如果九巴失敗，也不要卡死，直接顯示城巴
+                            kmbDone = true;
+                            finalize118();
+                        }
+
+                    } else {
+                        // 單一城巴路線
+                        if (!config.stopId) return;
+                        var url = 'https://rt.data.gov.hk/v2/transport/citybus/eta/ctb/' + config.stopId + '/' + route;
+                        makeRequest(url, function(err, json) {
+                            if (err || !json || !json.data) {
+                                renderError(route, '連線異常，稍後重試');
+                                return;
+                            }
+                            var validEtas = [];
+                            for (var j = 0; j < json.data.length; j++) {
+                                if (json.data[j].dir === 'O' && json.data[j].eta) {
+                                    json.data[j].company = '城巴';
+                                    validEtas.push(json.data[j]);
+                                }
+                            }
+                            renderRoute(route, validEtas);
+                        });
+                    }
+                })(routes[i]);
+            }
+        }
+
+        function resetCache() {
+            if(confirm('是否要清除車站快取並重新掃描？')) {
+                localStorage.removeItem(CACHE_KEY);
+                location.reload();
+            }
+        }
+
+        function init() {
+            updateClock();
+            setInterval(updateClock, 1000);
+
+            var cachedStr = localStorage.getItem(CACHE_KEY);
+            var cached = cachedStr ? JSON.parse(cachedStr) : {};
+            
+            var routes = ['8P', '118', '788', '789'];
+            var tasksToComplete = 5; 
+            var completedTasks = 0;
+
+            function checkAllLoaded() {
+                completedTasks++;
+                if (completedTasks === tasksToComplete) {
+                    fetchETAs();
+                    setInterval(fetchETAs, 30000); 
+                }
+            }
+
+            function saveCache() {
+                localStorage.setItem(CACHE_KEY, JSON.stringify(cached));
+            }
+
+            for (var i = 0; i < routes.length; i++) {
+                (function(route) {
+                    if (cached['CTB_' + route]) {
+                        routeConfigs[route].stopId = cached['CTB_' + route];
+                        checkAllLoaded();
+                    } else {
+                        renderError(route, '🔍 首次載入：城巴搜尋中...');
+                        findStopId(route, routeConfigs[route].searchKeyword, function(id) {
+                            if (id) {
+                                routeConfigs[route].stopId = id;
+                                cached['CTB_' + route] = id;
+                                saveCache();
+                            } else {
+                                renderError(route, '❌ 找不到城巴車站');
+                            }
+                            checkAllLoaded();
+                        });
+                    }
+
+                    if (route === '118') {
+                        if (cached['KMB_' + route]) {
+                            routeConfigs[route].kmbStopId = cached['KMB_' + route];
+                            checkAllLoaded();
+                        } else {
+                            renderError(route, '🔍 首次載入：九巴搜尋中...');
+                            findKmbStopId(route, routeConfigs[route].searchKeyword, function(id) {
+                                if (id) {
+                                    routeConfigs[route].kmbStopId = id;
+                                    cached['KMB_' + route] = id;
+                                    saveCache();
+                                }
+                                checkAllLoaded(); // 就算找不到，也會繼續往下執行，不卡死！
+                            });
+                        }
+                    }
+                })(routes[i]);
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
