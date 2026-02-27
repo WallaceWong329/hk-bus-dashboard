@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>巴士實時到站 (iPad 2 完美滿版版)</title>
+    <title>巴士實時到站 (iPad 2 防重疊終極版)</title>
     <style>
-        /* --- iPad 2 鎖死畫面，絕對禁止上下滑動與彈跳 --- */
+        /* --- 鎖死畫面，絕對禁止上下滑動與彈跳 --- */
         html, body {
             position: fixed;
             top: 0;
@@ -17,12 +17,11 @@
             width: 100%;
             height: 100%;
             margin: 0;
-            padding: 0; /* 將 padding 移到內層，防止 iOS 9 的 box-sizing Bug */
+            padding: 0;
             overflow: hidden; 
             background-color: #000000;
         }
 
-        /* 建立一個主容器來控制邊界 */
         #app-container {
             width: 100%;
             height: 100%;
@@ -84,7 +83,7 @@
         .grid-container {
             -webkit-flex: 1 1 auto;
             flex: 1 1 auto;
-            min-height: 0; /* 修復舊版 Safari Flex 子元素高度撐破容器的 Bug */
+            min-height: 0; 
             display: -webkit-flex;
             display: flex;
             -webkit-flex-wrap: wrap;
@@ -106,7 +105,7 @@
             -webkit-flex-direction: column;
             flex-direction: column;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            overflow: hidden; /* 防止內容撐破卡片 */
+            overflow: hidden; 
         }
         .route-header {
             display: -webkit-flex;
@@ -125,22 +124,33 @@
             color: #ff9f0a;
             margin-right: 15px;
             width: 75px;
+            -webkit-flex-shrink: 0;
+            flex-shrink: 0; /* 防止號碼被壓縮 */
         }
         .route-header-text {
             display: -webkit-flex;
             display: flex;
             -webkit-flex-direction: column;
             flex-direction: column;
+            -webkit-flex: 1;
+            flex: 1;
+            min-width: 0; /* 舊版 Safari 必須：允許內部文字截斷 */
         }
         .route-dest {
             font-size: 20px;
             color: #e5e5ea;
             font-weight: bold;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis; /* 文字太長變... */
         }
         .route-stop-name {
             font-size: 14px;
             color: #888888;
             margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .eta-list {
             list-style: none;
@@ -154,7 +164,7 @@
             justify-content: space-between;
             -webkit-flex: 1 1 auto;
             flex: 1 1 auto;
-            min-height: 0; /* 同樣防止內部溢出 */
+            min-height: 0; 
         }
         .eta-item {
             display: -webkit-flex;
@@ -166,8 +176,9 @@
             background: #2c2c2e;
             padding: 8px 15px;
             border-radius: 8px;
-            height: 29%; /* 微調高度讓 iPad 2 更緊湊 */
+            height: 29%; 
             box-sizing: border-box;
+            width: 100%;
         }
         .eta-time-info {
             display: -webkit-flex;
@@ -176,6 +187,10 @@
             flex-direction: column;
             -webkit-justify-content: center;
             justify-content: center;
+            -webkit-flex: 1;
+            flex: 1;
+            min-width: 0; /* 允許備註文字截斷，防止向右擠壓 */
+            padding-right: 10px; /* 確保與分鐘之間有安全距離 */
         }
         .eta-exact {
             font-size: 22px;
@@ -185,6 +200,7 @@
             display: flex;
             -webkit-align-items: center;
             align-items: center;
+            white-space: nowrap;
         }
         .co-badge {
             font-size: 13px;
@@ -192,6 +208,8 @@
             border-radius: 4px;
             margin-left: 8px;
             font-weight: bold;
+            -webkit-flex-shrink: 0;
+            flex-shrink: 0;
         }
         .co-kmb { background-color: #E3002B; color: #ffffff; }
         .co-ctb { background-color: #F1A300; color: #000000; }
@@ -200,11 +218,18 @@
             font-size: 14px;
             color: #98989d;
             margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis; /* 備註太長自動變...，絕不覆蓋分鐘 */
         }
         .minutes {
             font-size: 32px;
             font-weight: bold;
             color: #32d74b;
+            -webkit-flex-shrink: 0;
+            flex-shrink: 0; /* 絕對保護分鐘區域不被壓縮 */
+            text-align: right;
+            white-space: nowrap;
         }
         .minutes.soon {
             color: #ff453a;
