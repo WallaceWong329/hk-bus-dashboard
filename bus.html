@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>巴士實時到站 (iPad 2 橫三格版)</title>
+    <title>巴士實時到站 (iPad 2 完美六格版)</title>
     <style>
         /* --- 鎖死畫面，絕對禁止上下滑動與彈跳 --- */
         html, body {
@@ -90,7 +90,7 @@
             display: flex;
             -webkit-flex-wrap: wrap;
             flex-wrap: wrap;
-            -webkit-justify-content: flex-start; /* 改用靠左對齊配合 margin */
+            -webkit-justify-content: flex-start;
             justify-content: flex-start;
             -webkit-align-content: flex-start;
             align-content: flex-start;
@@ -98,8 +98,8 @@
         .card {
             background: #1c1c1e;
             border-radius: 16px;
-            padding: 15px; /* 稍微減少 padding 適應窄卡片 */
-            width: 31.5%; /* 3 格寬度 (預留空間防止舊 iOS 換行 Bug) */
+            padding: 15px; 
+            width: 31.5%; /* 3 格寬度 */
             height: 48%;  /* 保持兩行高度 */
             box-sizing: border-box;
             display: -webkit-flex;
@@ -108,10 +108,9 @@
             flex-direction: column;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
             overflow: hidden; 
-            margin-right: 2.75%; /* 卡片之間的右邊距 */
-            margin-bottom: 2%;   /* 卡片之間的下邊距 */
+            margin-right: 2.75%; 
+            margin-bottom: 2%;   
         }
-        /* 每行第 3 個卡片取消右邊距 */
         .card:nth-child(3n) {
             margin-right: 0;
         }
@@ -128,7 +127,7 @@
             flex-shrink: 0;
         }
         .route-num {
-            font-size: 36px; /* 字體縮小配合窄卡片 */
+            font-size: 36px;
             font-weight: bold;
             color: #ff9f0a;
             margin-right: 12px;
@@ -146,7 +145,7 @@
             min-width: 0; 
         }
         .route-dest {
-            font-size: 18px; /* 字體縮小配合窄卡片 */
+            font-size: 18px; 
             color: #e5e5ea;
             font-weight: bold;
             white-space: nowrap;
@@ -162,7 +161,6 @@
             text-overflow: ellipsis;
         }
         
-        /* --- 修正舊版 iOS 百分比高度重疊 Bug --- */
         .eta-list {
             list-style: none;
             padding: 0;
@@ -172,7 +170,7 @@
             -webkit-flex-direction: column;
             flex-direction: column;
             -webkit-flex: 1;
-            flex: 1; /* 自動填滿卡片剩下的空間 */
+            flex: 1; 
             min-height: 0; 
         }
         .eta-item {
@@ -188,11 +186,11 @@
             box-sizing: border-box;
             width: 100%;
             -webkit-flex: 1;
-            flex: 1; /* 強制均分空間 */
-            margin-bottom: 8px; /* 強制用 margin 隔開每個班次 */
+            flex: 1; 
+            margin-bottom: 8px; 
         }
         .eta-item:last-child {
-            margin-bottom: 0; /* 最後一個班次不需要底部邊距 */
+            margin-bottom: 0; 
         }
         
         .eta-time-info {
@@ -208,7 +206,7 @@
             padding-right: 8px; 
         }
         .eta-exact {
-            font-size: 20px; /* 字體縮小配合窄卡片 */
+            font-size: 20px; 
             font-weight: bold;
             color: #ffffff;
             display: -webkit-flex;
@@ -238,7 +236,7 @@
             text-overflow: ellipsis; 
         }
         .minutes {
-            font-size: 28px; /* 正常分鐘數保持大字體 */
+            font-size: 28px; 
             font-weight: bold;
             color: #32d74b;
             -webkit-flex-shrink: 0;
@@ -248,7 +246,7 @@
         }
         .minutes.soon {
             color: #ff453a;
-			font-size: 22px; /* 加入這行：專門把「即將抵達」稍微縮小，確保塞得進去 */
+            font-size: 22px; 
         }
     </style>
 </head>
@@ -282,7 +280,7 @@
                 <div class="route-num">118</div>
                 <div class="route-header-text">
                     <div class="route-dest">往 旺角/深水埗</div>
-                    <div class="route-stop-name">📍 樂軒臺</div>
+                    <div class="route-stop-name">📍 樂軒臺 (九巴/城巴)</div>
                 </div>
             </div>
             <ul class="eta-list" id="etas-118"></ul>
@@ -318,19 +316,30 @@
             </div>
             <ul class="eta-list" id="etas-789"></ul>
         </div>
+        <div class="card" id="card-694">
+            <div class="route-header">
+                <div class="route-num">694</div>
+                <div class="route-header-text">
+                    <div class="route-dest">往 調景嶺站</div>
+                    <div class="route-stop-name">📍 樂軒臺</div>
+                </div>
+            </div>
+            <ul class="eta-list" id="etas-694"></ul>
+        </div>
     </div>
 </div>
 
 <script>
-    // 自動升級快取版本，確保新加入的 82X 能被正常搜尋
-    var CACHE_KEY = 'bus_stops_cache_ipad2_v5';
+    // 升級至 v6，自動加入並搜尋 694 的車站
+    var CACHE_KEY = 'bus_stops_cache_ipad2_v6';
 
     var routeConfigs = {
         '8P':  { searchKeyword: '樂軒臺', stopId: null },
         '118': { searchKeyword: '樂軒臺', stopId: null, kmbStopId: null },
         '82X': { searchKeyword: '樂軒臺', stopId: null },
         '788': { searchKeyword: '翠灣',   stopId: null },
-        '789': { searchKeyword: '翠灣',   stopId: null }
+        '789': { searchKeyword: '翠灣',   stopId: null },
+        '694': { searchKeyword: '樂軒臺', stopId: null }
     };
 
     function padZero(num) {
@@ -457,7 +466,7 @@
                 
                 var diffMins = Math.floor((etaTime.getTime() - new Date().getTime()) / 60000);
                 if (diffMins <= 1) {
-                    minStr = '即將抵達'; /* 從 '即將' 改回完整的 '即將抵達' */
+                    minStr = '即將抵達';
                     isSoon = true;
                 } else {
                     minStr = diffMins + ' 分鐘';
@@ -486,7 +495,7 @@
     }
 
     function fetchETAs() {
-        var routes = ['8P', '118', '82X', '788', '789'];
+        var routes = ['8P', '118', '82X', '788', '789', '694'];
         
         for (var i = 0; i < routes.length; i++) {
             (function(route) {
@@ -573,8 +582,8 @@
         var cachedStr = localStorage.getItem(CACHE_KEY);
         var cached = cachedStr ? JSON.parse(cachedStr) : {};
         
-        var routes = ['8P', '118', '82X', '788', '789'];
-        var tasksToComplete = 6; // 5 條城巴 + 1 條九巴 = 6 個任務
+        var routes = ['8P', '118', '82X', '788', '789', '694'];
+        var tasksToComplete = 7; // 6 條城巴 + 1 條九巴 = 7 個任務
         var completedTasks = 0;
 
         function checkAllLoaded() {
