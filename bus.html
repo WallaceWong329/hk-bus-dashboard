@@ -160,12 +160,10 @@
             display: flex;
             -webkit-flex-direction: column;
             flex-direction: column;
-            -webkit-justify-content: space-between;
-            justify-content: space-between;
-            -webkit-flex: 1 1 auto;
-            flex: 1 1 auto;
-            min-height: 0; 
-        }
+            /* 讓列表自動填滿卡片剩下的空間 */
+            -webkit-flex: 1;
+            flex: 1; 
+        }        
         .eta-item {
             display: -webkit-flex;
             display: flex;
@@ -176,9 +174,16 @@
             background: #2c2c2e;
             padding: 8px 15px;
             border-radius: 8px;
-            height: 29%; 
             box-sizing: border-box;
             width: 100%;
+            /* 移除高度百分比，改用 flex:1 讓它自動均分空間 */
+            -webkit-flex: 1;
+            flex: 1;
+            margin-bottom: 8px; /* 強制用 margin 隔開每個班次 */
+        }
+		/* 最後一個班次不需要底部邊距 */
+        .eta-item:last-child {
+            margin-bottom: 0;
         }
         .eta-time-info {
             display: -webkit-flex;
