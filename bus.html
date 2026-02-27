@@ -238,7 +238,7 @@
             text-overflow: ellipsis; 
         }
         .minutes {
-            font-size: 28px; /* 字體縮小配合窄卡片 */
+            font-size: 28px; /* 正常分鐘數保持大字體 */
             font-weight: bold;
             color: #32d74b;
             -webkit-flex-shrink: 0;
@@ -248,6 +248,7 @@
         }
         .minutes.soon {
             color: #ff453a;
+			font-size: 22px; /* 加入這行：專門把「即將抵達」稍微縮小，確保塞得進去 */
         }
     </style>
 </head>
@@ -456,7 +457,7 @@
                 
                 var diffMins = Math.floor((etaTime.getTime() - new Date().getTime()) / 60000);
                 if (diffMins <= 1) {
-                    minStr = '即將抵達';
+                    minStr = '即將抵達'; /* 從 '即將' 改回完整的 '即將抵達' */
                     isSoon = true;
                 } else {
                     minStr = diffMins + ' 分鐘';
