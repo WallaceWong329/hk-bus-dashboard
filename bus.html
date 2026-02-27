@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>巴士實時到站 (iPad 2 防重疊終極版)</title>
+    <title>巴士實時到站 (iPad 2 橫三格版)</title>
     <style>
         /* --- 鎖死畫面，絕對禁止上下滑動與彈跳 --- */
         html, body {
@@ -80,6 +80,8 @@
             color: #888888;
             margin-top: 4px;
         }
+        
+        /* --- 橫 3 格排版設定 --- */
         .grid-container {
             -webkit-flex: 1 1 auto;
             flex: 1 1 auto;
@@ -88,17 +90,17 @@
             display: flex;
             -webkit-flex-wrap: wrap;
             flex-wrap: wrap;
-            -webkit-justify-content: space-between;
-            justify-content: space-between;
-            -webkit-align-content: space-between;
-            align-content: space-between;
+            -webkit-justify-content: flex-start; /* 改用靠左對齊配合 margin */
+            justify-content: flex-start;
+            -webkit-align-content: flex-start;
+            align-content: flex-start;
         }
         .card {
             background: #1c1c1e;
             border-radius: 16px;
-            padding: 15px 20px;
-            width: 48.5%; 
-            height: 48.5%; 
+            padding: 15px; /* 稍微減少 padding 適應窄卡片 */
+            width: 31.5%; /* 3 格寬度 (預留空間防止舊 iOS 換行 Bug) */
+            height: 48%;  /* 保持兩行高度 */
             box-sizing: border-box;
             display: -webkit-flex;
             display: flex;
@@ -106,7 +108,14 @@
             flex-direction: column;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
             overflow: hidden; 
+            margin-right: 2.75%; /* 卡片之間的右邊距 */
+            margin-bottom: 2%;   /* 卡片之間的下邊距 */
         }
+        /* 每行第 3 個卡片取消右邊距 */
+        .card:nth-child(3n) {
+            margin-right: 0;
+        }
+
         .route-header {
             display: -webkit-flex;
             display: flex;
@@ -119,13 +128,13 @@
             flex-shrink: 0;
         }
         .route-num {
-            font-size: 42px;
+            font-size: 36px; /* 字體縮小配合窄卡片 */
             font-weight: bold;
             color: #ff9f0a;
-            margin-right: 15px;
-            width: 75px;
+            margin-right: 12px;
+            width: 65px;
             -webkit-flex-shrink: 0;
-            flex-shrink: 0; /* 防止號碼被壓縮 */
+            flex-shrink: 0;
         }
         .route-header-text {
             display: -webkit-flex;
@@ -134,24 +143,26 @@
             flex-direction: column;
             -webkit-flex: 1;
             flex: 1;
-            min-width: 0; /* 舊版 Safari 必須：允許內部文字截斷 */
+            min-width: 0; 
         }
         .route-dest {
-            font-size: 20px;
+            font-size: 18px; /* 字體縮小配合窄卡片 */
             color: #e5e5ea;
             font-weight: bold;
             white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis; /* 文字太長變... */
+            text-overflow: ellipsis; 
         }
         .route-stop-name {
-            font-size: 14px;
+            font-size: 13px;
             color: #888888;
             margin-top: 2px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
+        
+        /* --- 修正舊版 iOS 百分比高度重疊 Bug --- */
         .eta-list {
             list-style: none;
             padding: 0;
@@ -160,10 +171,10 @@
             display: flex;
             -webkit-flex-direction: column;
             flex-direction: column;
-            /* 讓列表自動填滿卡片剩下的空間 */
             -webkit-flex: 1;
-            flex: 1; 
-        }        
+            flex: 1; /* 自動填滿卡片剩下的空間 */
+            min-height: 0; 
+        }
         .eta-item {
             display: -webkit-flex;
             display: flex;
@@ -172,19 +183,18 @@
             -webkit-align-items: center;
             align-items: center;
             background: #2c2c2e;
-            padding: 8px 15px;
+            padding: 8px 12px;
             border-radius: 8px;
             box-sizing: border-box;
             width: 100%;
-            /* 移除高度百分比，改用 flex:1 讓它自動均分空間 */
             -webkit-flex: 1;
-            flex: 1;
+            flex: 1; /* 強制均分空間 */
             margin-bottom: 8px; /* 強制用 margin 隔開每個班次 */
         }
-		/* 最後一個班次不需要底部邊距 */
         .eta-item:last-child {
-            margin-bottom: 0;
+            margin-bottom: 0; /* 最後一個班次不需要底部邊距 */
         }
+        
         .eta-time-info {
             display: -webkit-flex;
             display: flex;
@@ -194,11 +204,11 @@
             justify-content: center;
             -webkit-flex: 1;
             flex: 1;
-            min-width: 0; /* 允許備註文字截斷，防止向右擠壓 */
-            padding-right: 10px; /* 確保與分鐘之間有安全距離 */
+            min-width: 0; 
+            padding-right: 8px; 
         }
         .eta-exact {
-            font-size: 22px;
+            font-size: 20px; /* 字體縮小配合窄卡片 */
             font-weight: bold;
             color: #ffffff;
             display: -webkit-flex;
@@ -208,10 +218,10 @@
             white-space: nowrap;
         }
         .co-badge {
-            font-size: 13px;
-            padding: 2px 6px;
+            font-size: 12px;
+            padding: 2px 5px;
             border-radius: 4px;
-            margin-left: 8px;
+            margin-left: 6px;
             font-weight: bold;
             -webkit-flex-shrink: 0;
             flex-shrink: 0;
@@ -220,19 +230,19 @@
         .co-ctb { background-color: #F1A300; color: #000000; }
         
         .rmk {
-            font-size: 14px;
+            font-size: 13px;
             color: #98989d;
             margin-top: 2px;
             white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis; /* 備註太長自動變...，絕不覆蓋分鐘 */
+            text-overflow: ellipsis; 
         }
         .minutes {
-            font-size: 32px;
+            font-size: 28px; /* 字體縮小配合窄卡片 */
             font-weight: bold;
             color: #32d74b;
             -webkit-flex-shrink: 0;
-            flex-shrink: 0; /* 絕對保護分鐘區域不被壓縮 */
+            flex-shrink: 0; 
             text-align: right;
             white-space: nowrap;
         }
@@ -271,11 +281,22 @@
                 <div class="route-num">118</div>
                 <div class="route-header-text">
                     <div class="route-dest">往 旺角/深水埗</div>
-                    <div class="route-stop-name">📍 樂軒臺 (九巴/城巴)</div>
+                    <div class="route-stop-name">📍 樂軒臺</div>
                 </div>
             </div>
             <ul class="eta-list" id="etas-118"></ul>
         </div>
+        <div class="card" id="card-82X">
+            <div class="route-header">
+                <div class="route-num">82X</div>
+                <div class="route-header-text">
+                    <div class="route-dest">往 北角</div>
+                    <div class="route-stop-name">📍 樂軒臺</div>
+                </div>
+            </div>
+            <ul class="eta-list" id="etas-82X"></ul>
+        </div>
+        
         <div class="card" id="card-788">
             <div class="route-header">
                 <div class="route-num">788</div>
@@ -300,11 +321,13 @@
 </div>
 
 <script>
-    var CACHE_KEY = 'bus_stops_cache_ipad2_v4';
+    // 自動升級快取版本，確保新加入的 82X 能被正常搜尋
+    var CACHE_KEY = 'bus_stops_cache_ipad2_v5';
 
     var routeConfigs = {
         '8P':  { searchKeyword: '樂軒臺', stopId: null },
         '118': { searchKeyword: '樂軒臺', stopId: null, kmbStopId: null },
+        '82X': { searchKeyword: '樂軒臺', stopId: null },
         '788': { searchKeyword: '翠灣',   stopId: null },
         '789': { searchKeyword: '翠灣',   stopId: null }
     };
@@ -433,7 +456,7 @@
                 
                 var diffMins = Math.floor((etaTime.getTime() - new Date().getTime()) / 60000);
                 if (diffMins <= 1) {
-                    minStr = '即將抵達';
+                    minStr = '即將';
                     isSoon = true;
                 } else {
                     minStr = diffMins + ' 分鐘';
@@ -462,7 +485,7 @@
     }
 
     function fetchETAs() {
-        var routes = ['8P', '118', '788', '789'];
+        var routes = ['8P', '118', '82X', '788', '789'];
         
         for (var i = 0; i < routes.length; i++) {
             (function(route) {
@@ -518,7 +541,7 @@
                     var url = 'https://rt.data.gov.hk/v2/transport/citybus/eta/ctb/' + config.stopId + '/' + route;
                     makeRequest(url, function(err, json) {
                         if (err || !json || !json.data) {
-                            renderError(route, '連線異常，稍後重試');
+                            renderError(route, '連線異常');
                             return;
                         }
                         var validEtas = [];
@@ -549,8 +572,8 @@
         var cachedStr = localStorage.getItem(CACHE_KEY);
         var cached = cachedStr ? JSON.parse(cachedStr) : {};
         
-        var routes = ['8P', '118', '788', '789'];
-        var tasksToComplete = 5; 
+        var routes = ['8P', '118', '82X', '788', '789'];
+        var tasksToComplete = 6; // 5 條城巴 + 1 條九巴 = 6 個任務
         var completedTasks = 0;
 
         function checkAllLoaded() {
@@ -567,29 +590,30 @@
 
         for (var i = 0; i < routes.length; i++) {
             (function(route) {
+                // 城巴搜尋
                 if (cached['CTB_' + route]) {
                     routeConfigs[route].stopId = cached['CTB_' + route];
                     checkAllLoaded();
                 } else {
-                    renderError(route, '🔍 首次載入：城巴搜尋中...');
+                    renderError(route, '搜尋中...');
                     findStopId(route, routeConfigs[route].searchKeyword, function(id) {
                         if (id) {
                             routeConfigs[route].stopId = id;
                             cached['CTB_' + route] = id;
                             saveCache();
                         } else {
-                            renderError(route, '❌ 找不到城巴車站');
+                            renderError(route, '找不到車站');
                         }
                         checkAllLoaded();
                     });
                 }
 
+                // 九巴搜尋 (針對 118)
                 if (route === '118') {
                     if (cached['KMB_' + route]) {
                         routeConfigs[route].kmbStopId = cached['KMB_' + route];
                         checkAllLoaded();
                     } else {
-                        renderError(route, '🔍 首次載入：九巴搜尋中...');
                         findKmbStopId(route, routeConfigs[route].searchKeyword, function(id) {
                             if (id) {
                                 routeConfigs[route].kmbStopId = id;
